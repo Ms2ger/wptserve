@@ -132,7 +132,7 @@ class Router(object):
                         requests. This must take two parameters, the request
                         object and the response object.
         """
-        if type(methods) in types.StringTypes or methods is any_method:
+        if type(methods) == str or methods is any_method:
             methods = [methods]
         for method in methods:
             self.routes.append((method, compile_path_match(path), handler))

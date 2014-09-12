@@ -3,14 +3,14 @@ import json
 import logging
 import os
 import traceback
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
-from constants import content_types
-from pipes import Pipeline, template
-from ranges import RangeParser
-from response import MultipartContent
-from utils import HTTPException
+from .constants import content_types
+from .pipes import Pipeline, template
+from .ranges import RangeParser
+from .response import MultipartContent
+from .utils import HTTPException
 
 logger = logging.getLogger("wptserve")
 
@@ -50,11 +50,11 @@ class DirectoryHandler(object):
         if not base_path.endswith("/"):
             base_path += "/"
         if base_path != "/":
-            link = urlparse.urljoin(base_path, "..")
+            link = urllib.parse.urljoin(base_path, "..")
             yield ("""<li class="dir"><a href="%(link)s">%(name)s</a>""" %
                    {"link": link, "name": ".."})
         for item in sorted(os.listdir(path)):
-            link = cgi.escape(urllib.quote(item))
+            link = cgi.escape(urllib.parse.quote(item))
             if os.path.isdir(os.path.join(filesystem_base, item)):
                 link += "/"
                 class_ = "dir"
@@ -88,7 +88,7 @@ class FileHandler(object):
                 byte_ranges = None
             data = self.get_data(response, path, byte_ranges)
             response.content = data
-            query = urlparse.parse_qs(request.url_parts.query)
+            query = urllib.parse.parse_qs(request.url_parts.query)
 
             pipeline = None
             if "pipe" in query:
@@ -172,7 +172,7 @@ def python_script_handler(request, response):
 
     try:
         environ = {"__file__": path}
-        execfile(path, environ, environ)
+        exec(compile(open(path).read(), path, 'exec'), environ, environ)
         if "main" in environ:
             handler = FunctionHandler(environ["main"])
             handler(request, response)

@@ -5,14 +5,14 @@ import re
 import time
 import types
 import uuid
-from cStringIO import StringIO
+from io import StringIO
 
 logger = logging.getLogger("wptserve")
 
 
 def resolve_content(response):
     rv = "".join(item for item in response.iter_content())
-    if type(rv) == unicode:
+    if type(rv) == str:
         rv = rv.encode(response.encoding)
     return rv
 
@@ -290,7 +290,7 @@ class ReplacementTokenizer(object):
         try:
             token = int(token)
         except:
-            token = unicode(token, "utf8")
+            token = str(token, "utf8")
         return ("index", token)
 
     def var(scanner, token):
@@ -415,14 +415,14 @@ def template(request, content):
         for item in tokens[1:]:
             value = value[item[1]]
 
-        assert isinstance(value, (int,) + types.StringTypes), tokens
+        assert isinstance(value, (int,) + str), tokens
 
         if variable is not None:
             variables[variable] = value
 
         #Should possibly support escaping for other contexts e.g. script
         #TODO: read the encoding of the response
-        return escape(unicode(value)).encode("utf-8")
+        return escape(str(value)).encode("utf-8")
 
     template_regexp = re.compile(r"{{([^}]*)}}")
     new_content, count = template_regexp.subn(config_replacement, content)
